@@ -1,0 +1,21 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# .env
+.env
+
+# Compiler, OS
+.vscode/
+.idea/
+.DS_Store
+
+# uv (python version, Base is 3.12)
+.python-version
