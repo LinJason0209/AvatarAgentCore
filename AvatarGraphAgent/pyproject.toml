@@ -1,7 +1,7 @@
 [project]
 name = "avatargraphagent"
 version = "0.1.0"
-description = "Add your description here"
+description = "Core engine for Local AI Avatars using LangGraph and Ollama"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
