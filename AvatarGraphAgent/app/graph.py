@@ -1,11 +1,12 @@
 import os
 from typing import Literal
 from dotenv import load_dotenv
-from langchain_core.messages import AIMessage, BaseMessage
+from langchain_core.messages import SystemMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
 
+from app.prompt.system_prompt import AGENT_CORE_PROMPT
 from app.state import MESSAGE_KEY, AgentState
 from app.tools.file_tool import list_files, read_file_content
 
@@ -22,6 +23,11 @@ llm_with_tools = llm.bind_tools(tools)
 # Define the first note: call the model
 def call_model(state:AgentState):
     history = state[MESSAGE_KEY]
+
+    # Check and set the system prompt to be the header.
+    if not any(isinstance(m, SystemMessage) for m in history):
+        history = [SystemMessage(content=AGENT_CORE_PROMPT)] + history
+
     response = llm_with_tools.invoke(history)
     return {MESSAGE_KEY: [response]}
 
@@ -56,5 +62,5 @@ workflow.add_edge("tools", "agent")
 # workflow.add_edge("agent",END)
 
 # Make the app
-app_graph = workflow.compile()
+app_graph = workflow.compile(interrupt_before=[], interrupt_after=[])
 
