@@ -8,6 +8,23 @@ from app.ui.cli import start_interactive_session
 def main():
     print("--- 🤖 Local AI Agent Operation (Ollama + LangGraph) ---")
 
+
+
+    ControlMode()
+
+def ControlMode():
+    parser = argparse.ArgumentParser(description="AvatarAgentCore CLI")
+    parser.add_argument("--mode", type=str, default="cli", choices=["cli", "api"], help="Application operation type")
+    args = parser.parse_args()
+    if args.mode == "cli":
+        start_interactive_session()
+    elif args.mode == "api":
+        print("The API mode is development.")
+
+if __name__ == "__main__":
+    main()
+
+# def history_chat_sample():
     # Simulate the user input
     # user_input = "你好，請用繁體中文簡單介紹你自己，並確認你現在使用的模型名稱。"
     # user_input = "請列出目前目錄下的檔案。"
@@ -23,17 +40,3 @@ def main():
     # result = app_graph.invoke(initial_state)
     # print("\n[AI Response]")
     # print(result[MESSAGE_KEY][-1].content)
-
-    ControlMode()
-
-def ControlMode():
-    parser = argparse.ArgumentParser(description="AvatarAgentCore CLI")
-    parser.add_argument("--mode", type=str, default="cli", choices=["cli", "api"], help="Application operation type")
-    args = parser.parse_args()
-    if args.mode == "cli":
-        start_interactive_session()
-    elif args.mode == "api":
-        print("The API mode is development.")
-
-if __name__ == "__main__":
-    main()

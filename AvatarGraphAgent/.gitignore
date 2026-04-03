@@ -19,3 +19,7 @@ wheels/
 
 # uv (python version, Base is 3.12)
 .python-version
+
+# DB
+data/*.db
+data/*.db-journal
