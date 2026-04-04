@@ -6,7 +6,7 @@ from langchain_core.messages import SystemMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from app.prompt.system_prompt import AGENT_CORE_PROMPT
 from app.state import MESSAGE_KEY, AgentState
@@ -21,18 +21,6 @@ llm = ChatOllama(
 )
 tools = [list_files, read_file_content]
 llm_with_tools = llm.bind_tools(tools)
-
-# Memory
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(BASE_DIR, "data")
-DB_PATH = os.path.join(DATA_DIR, "avatar_memory.db")
-
-if not os.path.exists(DATA_DIR):
-    os.makedirs(DATA_DIR)
-    print(f"📁 Create the Data directory: {DATA_DIR}")
-
-memory_connect = sqlite3.connect(DB_PATH, check_same_thread=False)
-memory = SqliteSaver(memory_connect)
 
 # Define the first note: call the model
 def call_model(state:AgentState):
@@ -76,9 +64,10 @@ workflow.add_edge("tools", "agent")
 # workflow.add_edge("agent",END)
 
 # Make the app
-app_graph = workflow.compile(
-    checkpointer=memory,
-    interrupt_before=[], 
-    interrupt_after=[]
-    )
+def get_async_graph(memory_obj:AsyncSqliteSaver):
+    return workflow.compile(
+        checkpointer=memory_obj,
+        interrupt_before=[], 
+        interrupt_after=[]
+        )
 

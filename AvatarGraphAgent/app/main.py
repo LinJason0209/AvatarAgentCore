@@ -1,20 +1,17 @@
 import argparse
-
-from langchain_core.messages import HumanMessage
-from app.graph import app_graph
-from app.state import MESSAGE_KEY
-from app.ui.cli import start_interactive_session
+import asyncio
+from app.ui.cli import async_start_interactive_session
 
 def main():
     print("--- 🤖 Local AI Agent Operation (Ollama + LangGraph) ---")
-    ControlMode()
+    control_mode()
 
-def ControlMode():
+def control_mode():
     parser = argparse.ArgumentParser(description="AvatarAgentCore CLI")
     parser.add_argument("--mode", type=str, default="cli", choices=["cli", "api"], help="Application operation type")
     args = parser.parse_args()
     if args.mode == "cli":
-        start_interactive_session()
+        asyncio.run(async_start_interactive_session())
     elif args.mode == "api":
         print("The API mode is development.")
 
