@@ -5,7 +5,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langchain_core.messages import AIMessageChunk, HumanMessage
 
 from app.state import MESSAGE_KEY
-from app.graph import get_async_graph
+from app.graph import app_graph
 from app.system_path import DATA_DIR, DB_PATH
 
 def tidy_up_message(message = ""):
@@ -50,7 +50,7 @@ async def async_interactive_session(user_input, config, app_graph):
             full_response += message.content
     print("\n" + "-" * 30)
     
-async def async_session_loop(app_graph, config):
+async def async_session_loop(graph, config):
     while True:
             try:
                 # Get input
@@ -66,7 +66,7 @@ async def async_session_loop(app_graph, config):
                 await async_interactive_session(
                     user_input=user_input,
                     config=config,
-                    app_graph=app_graph
+                    app_graph=graph
                 )
 
             except Exception as e:
@@ -82,7 +82,7 @@ async def async_start_interactive_session():
         print(f"📁 Create the Data directory: {DATA_DIR}")
 
     async with AsyncSqliteSaver.from_conn_string(DB_PATH) as memory:
-        app_graph = get_async_graph(memory_obj=memory)
-        await async_session_loop(app_graph=app_graph, config=config)
+        compiled_graph = await app_graph.get_async_graph(memory_obj=memory)
+        await async_session_loop(graph=compiled_graph, config=config)
 
         
