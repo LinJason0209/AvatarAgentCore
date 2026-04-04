@@ -7,9 +7,6 @@ from app.ui.cli import start_interactive_session
 
 def main():
     print("--- 🤖 Local AI Agent Operation (Ollama + LangGraph) ---")
-
-
-
     ControlMode()
 
 def ControlMode():
