@@ -11,6 +11,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.mcp.mcp_manager import mcp_manager 
 from app.prompt.system_prompt import AGENT_CORE_PROMPT
 from app.state import MESSAGE_KEY, AgentState
+from app.system.handler import get_system_prompt
 from app.tools.file_tool import list_files, read_file_content
 
 load_dotenv()
@@ -31,13 +32,7 @@ class AvatarGraphBuilder:
 
     # Define the first note: call the model
     async def call_model(self, state:AgentState):
-        history = state[MESSAGE_KEY]
-
-        # Check and set the system prompt to be the header.
-        if not any(isinstance(m, SystemMessage) for m in history):
-            history = [SystemMessage(content=AGENT_CORE_PROMPT)] + history
-
-        response = await self.llm_with_tools.ainvoke(history)
+        response = await self.llm_with_tools.ainvoke(get_system_prompt(state=state))
         return {MESSAGE_KEY: [response]}
 
     def should_continue(self, state:AgentState) -> Literal["tools", "__end__"]:
