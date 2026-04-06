@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "brave-search": {
+        "enabled": true,
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+        "env": {
+            "BRAVE_API_KEY": "FROM_ENV"
+        }
+    },
+    "fetch": {
+        "enabled": false,
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-fetch"],
+        "env": {}
+    },
+    "google-search": {
+        "enabled": false,
+        "command": "npx",
+        "args": ["-y", "@adenot/mcp-google-search"],
+        "env": {
+            "GOOGLE_API_KEY": "FROM_ENV",
+            "GOOGLE_SEARCH_ENGINE_ID": "FROM_ENV"
+            }
+        } 
+  }
+}
