@@ -1,15 +1,12 @@
 import os
-import sqlite3
 from typing import Literal
 from dotenv import load_dotenv
-from langchain_core.messages import SystemMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from app.mcp.mcp_manager import mcp_manager 
-from app.prompt.system_prompt import AGENT_CORE_PROMPT
 from app.state import MESSAGE_KEY, AgentState
 from app.system.handler import get_system_prompt
 from app.tools.file_tool import list_files, read_file_content

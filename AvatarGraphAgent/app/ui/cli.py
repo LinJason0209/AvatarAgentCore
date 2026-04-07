@@ -2,11 +2,10 @@
 import os
 
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from langchain_core.messages import AIMessageChunk, HumanMessage
+from langchain_core.messages import AIMessageChunk
 
-from app.state import MESSAGE_KEY
+from app.chat import get_config_dic, get_db_path, get_human_message
 from app.graph import app_graph
-from app.system_path import DATA_DIR, DB_PATH
 
 def tidy_up_message(message = ""):
     print(" "*60, end="\r")
@@ -23,14 +22,9 @@ def get_thread_id():
     print("="*50 + "\n")
     return thread_id
 
-def get_config_dic(thread_id):
-    return{
-        "configurable": {"thread_id": thread_id},
-        "recursion_limit": 20
-    }
 
 async def async_interactive_session(user_input, config, app_graph):
-    input_data = {MESSAGE_KEY: [HumanMessage(content=user_input)]}
+    input_data = get_human_message(user_input)
     print("⏳ Agent is thinking...", end="\r")
 
     full_response = ""
@@ -76,12 +70,9 @@ async def async_session_loop(graph, config):
 async def async_start_interactive_session():
     thread_id = get_thread_id()
     config = get_config_dic(thread_id)
-    
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
-        print(f"📁 Create the Data directory: {DATA_DIR}")
+    db_path = get_db_path()
 
-    async with AsyncSqliteSaver.from_conn_string(DB_PATH) as memory:
+    async with AsyncSqliteSaver.from_conn_string(db_path) as memory:
         compiled_graph = await app_graph.get_async_graph(memory_obj=memory)
         await async_session_loop(graph=compiled_graph, config=config)
 
