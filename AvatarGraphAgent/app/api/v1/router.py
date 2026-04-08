@@ -1,13 +1,16 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.api.v1.api_body import HEALTH_CHECK_RESPONSE, ChatRequest, ChatResponse
 from app.api.v1.server import async_avatar_chat_static, async_avatar_chat_stream
 
-app = FastAPI(title="靈月 Avatar-1 API")
+router = APIRouter(
+    prefix="/soulmoon/v1/stage",
+    tags=["/soulmoon/v1/stage"]
+)
 
-@app.post("/chat/stream")
+@router.post("/chat_stream")
 async def chat_stream(request:ChatRequest):
     chat_response_body = async_avatar_chat_stream(
         user_input=request.message,
@@ -18,7 +21,7 @@ async def chat_stream(request:ChatRequest):
         media_type="text/event-stream"
     )
 
-@app.post("/chat/static")
+@router.post("/chat_static")
 async def chat_static(request:ChatRequest):
     chat_message = await async_avatar_chat_static(
         user_input=request.message,
@@ -27,6 +30,9 @@ async def chat_static(request:ChatRequest):
     response = ChatResponse(message=chat_message, thread_id=request.user_id)
     return response
 
-@app.get("/health")
+@router.get("/health")
 async def health_check():
     return HEALTH_CHECK_RESPONSE
+
+app = FastAPI(title="靈月 Avatar-1 API")
+app.include_router(router)

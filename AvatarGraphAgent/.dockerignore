@@ -1,0 +1,21 @@
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# venv
+.venv/
+venv/
+env/
+
+# env, Git
+.env
+.git/
+.gitignore
+
+# local db
+data/*.sqlite
+data/*.db
+
+# log
+*.log

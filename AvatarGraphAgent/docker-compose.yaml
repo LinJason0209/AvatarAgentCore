@@ -1,0 +1,17 @@
+name: soulmoon-agent 
+services:
+  soulmoon-agent:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    image: soulmoon-agent
+    container_name: soulmoon
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
+    restart: always
+    extra_hosts:
+    - "host.docker.internal:host-gateway"
