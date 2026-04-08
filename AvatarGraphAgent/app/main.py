@@ -17,20 +17,3 @@ def control_mode():
 
 if __name__ == "__main__":
     main()
-
-# def history_chat_sample():
-    # Simulate the user input
-    # user_input = "你好，請用繁體中文簡單介紹你自己，並確認你現在使用的模型名稱。"
-    # user_input = "請列出目前目錄下的檔案。"
-    # user_input = "告訴我你的代號是什麼？"
-
-
-    # # Set the initial config
-    # initial_state = {
-    #     MESSAGE_KEY:[HumanMessage(content=user_input)]
-    # }
-
-    # # Operate agent
-    # result = app_graph.invoke(initial_state)
-    # print("\n[AI Response]")
-    # print(result[MESSAGE_KEY][-1].content)
