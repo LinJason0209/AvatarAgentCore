@@ -16,7 +16,7 @@ load_dotenv()
 # Initialize the ollama connection config
 llm = ChatOllama(
     model=os.getenv("LLM_MODEL", "gemma3:latest"),
-    base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+    base_url=os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
 )
 
 tool_list = [list_files, read_file_content]
