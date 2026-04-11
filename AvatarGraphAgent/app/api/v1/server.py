@@ -4,7 +4,7 @@ from langchain_core.messages import AIMessageChunk
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from app.api.v1.api_body import ChatResponse
 from app.chat import get_config_dic, get_db_path, get_human_message
-from app.graph import app_graph
+from app.graph.builder.host_builder import host_graph
 
 async def async_avatar_chat_stream(user_input:str, thread_id:str):
     config = get_config_dic(thread_id)
@@ -12,7 +12,7 @@ async def async_avatar_chat_stream(user_input:str, thread_id:str):
     db_path = get_db_path()
 
     async with AsyncSqliteSaver.from_conn_string(db_path) as memory:
-        compiled_graph = await app_graph.get_async_graph(memory_obj=memory)
+        compiled_graph = await host_graph.get_async_graph(memory_obj=memory)
         async for message, metadata in compiled_graph.astream(
                 input=input_data,
                 config=config,

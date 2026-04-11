@@ -15,6 +15,9 @@ class McpManager:
         self.tools = []
 
     async def initialize(self):
+        if self.client:
+            return self.tools
+            
         if not os.path.exists(self.config_path):
             print(f"⚠️ Warning: {self.config_path} not found. No MCP tools loaded.")
             return []

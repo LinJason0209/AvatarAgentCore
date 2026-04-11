@@ -1,14 +1,14 @@
 import os
-from typing import Literal
 from dotenv import load_dotenv
 from langchain_ollama import ChatOllama
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+from app.graph.nodes.agent_node import AgentNode
+from app.graph.edges.chould_continue_conditional_edge import should_continue
 from app.mcp.mcp_manager import mcp_manager 
-from app.state import MESSAGE_KEY, AgentState
-from app.system.handler import get_system_prompt
+from app.state import AgentState
 from app.tools.file_tool import list_files, read_file_content
 
 load_dotenv()
@@ -27,25 +27,12 @@ class AvatarGraphBuilder:
         self.local_tools = local_tools
         self.llm_with_tools = None
 
-    # Define the first note: call the model
-    async def call_model(self, state:AgentState):
-        response = await self.llm_with_tools.ainvoke(get_system_prompt(state=state))
-        return {MESSAGE_KEY: [response]}
-
-    def should_continue(self, state:AgentState) -> Literal["tools", "__end__"]:
-        messages = state[MESSAGE_KEY]
-        last_message = messages[-1]
-
-        if getattr(last_message, "tool_calls", None): 
-            return "tools"
-        return "__end__"
-
-    def create_workflow(self, tools):
+    def create_workflow(self, tools, agent_instance:AgentNode):
         # Construct the Graph
         workflow = StateGraph(AgentState)
 
         # Add node
-        workflow.add_node("agent", self.call_model)
+        workflow.add_node("agent", agent_instance.call_model)
         workflow.add_node("tools", ToolNode(tools))
 
         # Set entry point
@@ -54,7 +41,7 @@ class AvatarGraphBuilder:
         # set edges
         workflow.add_conditional_edges(
             "agent", 
-            self.should_continue,
+            should_continue,
             {
                 "tools":"tools",
                 "__end__":END
@@ -70,12 +57,13 @@ class AvatarGraphBuilder:
         mcp_tools = await mcp_manager.initialize()
         all_tools = self.local_tools + mcp_tools
         self.llm_with_tools = self.llm.bind_tools(all_tools)
+        agent_instance = AgentNode(self.llm_with_tools)
 
-        workflow = self.create_workflow(tools=all_tools)
+        workflow = self.create_workflow(all_tools, agent_instance)
         return workflow.compile(
             checkpointer=memory_obj,
             interrupt_before=[], 
             interrupt_after=[]
             )
 
-app_graph = AvatarGraphBuilder(llm, tool_list)
+host_graph = AvatarGraphBuilder(llm, tool_list)

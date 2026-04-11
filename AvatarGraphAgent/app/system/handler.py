@@ -2,7 +2,7 @@ from datetime import datetime
 
 from langchain_core.messages import SystemMessage
 
-from app.prompt.system_prompt import AGENT_CORE_PROMPT
+from app.prompts.system_prompt import AGENT_CORE_PROMPT
 from app.state import MESSAGE_KEY, AgentState
 
 def get_system_prompt(state: AgentState, culture:str = "Location: Taipei, Taiwan"):

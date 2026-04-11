@@ -5,7 +5,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langchain_core.messages import AIMessageChunk
 
 from app.chat import get_config_dic, get_db_path, get_human_message
-from app.graph import app_graph
+from AvatarGraphAgent.app.graph.builder.host_builder import host_graph
 
 def tidy_up_message(message = ""):
     print(" "*60, end="\r")
@@ -68,12 +68,16 @@ async def async_session_loop(graph, config):
                 break
 
 async def async_start_interactive_session():
+    from app.mcp.mcp_manager import mcp_manager
     thread_id = get_thread_id()
     config = get_config_dic(thread_id)
     db_path = get_db_path()
 
-    async with AsyncSqliteSaver.from_conn_string(db_path) as memory:
-        compiled_graph = await app_graph.get_async_graph(memory_obj=memory)
-        await async_session_loop(graph=compiled_graph, config=config)
+    try:
+        async with AsyncSqliteSaver.from_conn_string(db_path) as memory:
+            compiled_graph = await host_graph.get_async_graph(memory_obj=memory)
+            await async_session_loop(graph=compiled_graph, config=config)
+    finally:
+        await mcp_manager.shutdown()
 
         

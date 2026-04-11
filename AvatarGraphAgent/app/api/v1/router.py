@@ -1,9 +1,11 @@
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 
 from app.api.v1.api_body import HEALTH_CHECK_RESPONSE, ChatRequest, ChatResponse
 from app.api.v1.server import async_avatar_chat_static, async_avatar_chat_stream
+from app.mcp.mcp_manager import mcp_manager
 
 router = APIRouter(
     prefix="/soulmoon/v1/stage",
@@ -34,5 +36,10 @@ async def chat_static(request:ChatRequest):
 async def health_check():
     return HEALTH_CHECK_RESPONSE
 
-app = FastAPI(title="靈月 Avatar-1 API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    await mcp_manager.shutdown()
+
+app = FastAPI(title="靈月 Avatar-1 API", lifespan=lifespan)
 app.include_router(router)
