@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Any
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
 from app.core.system_path import MCP_CONFIG_PATH
+from app.core.env_config import config as env_config
 
 MCP_ENABLE_TAG = "enabled"
 
@@ -58,7 +59,6 @@ class McpManager:
         return active_config
 
     def set_env(self, server_configs: Dict[str, Any]) -> None:
-        from app.core.env_config import config as env_config
         base_env = os.environ.copy()
         failed_servers = []
 

@@ -17,7 +17,4 @@ def get_human_message(user_input:str):
     return  {MESSAGE_KEY: [HumanMessage(content=user_input)]}
 
 def get_db_path():
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
-        print(f"📁 Create the Data directory: {DATA_DIR}")
     return DB_PATH

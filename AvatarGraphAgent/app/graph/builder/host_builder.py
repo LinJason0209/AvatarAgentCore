@@ -71,14 +71,14 @@ class AvatarGraphBuilder:
 
 
     # Make the app
-    async def get_async_graph(self, memory_obj:AsyncSqliteSaver):
+    async def get_async_graph(self, memory_obj:AsyncSqliteSaver, draw_graph:bool = False):
         mcp_tools = await mcp_manager.initialize()
         all_tools = self.local_tools + mcp_tools
         self.llm_with_tools = self.llm.bind_tools(all_tools)
 
         agent_instance = AgentNode(self.llm_with_tools)
         reflection_instance = ReflectionNode(self.llm_with_tools)
-        sould_reflection_edge = ShouldRefkect(self.llm_with_tools)
+        sould_reflection_edge = ShouldRefkect()
 
         workflow = self.create_workflow(
             all_tools, 
@@ -92,7 +92,8 @@ class AvatarGraphBuilder:
             interrupt_before=[], 
             interrupt_after=[]
             )
-        await save_graph_image(compile_graph)
+        if draw_graph:
+            await save_graph_image(compile_graph)
         return compile_graph
 
 host_graph = AvatarGraphBuilder(llm, tool_list)

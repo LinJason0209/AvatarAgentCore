@@ -1,35 +1,65 @@
 # AvatarAgentCore
 
-AvatarAgentCore is a core engine for local AI avatars, providing conversation flow control and memory management capabilities through a graph-based orchestration.
-
-## 📋 Table of Contents
-- [Overview](#overview)
-- [Architecture & Tech Stack](#architecture--tech-stack)
-- [Key Features](#key-features)
-- [Getting Started](#getting-started)
-- [API Usage](#api-usage)
-- [Configuration](#configuration)
-- [Notes & Requirements](#notes--requirements)
-- [License](#license)
+AvatarAgentCore is a dialogue control engine for local AI avatars. It uses **LangGraph** to manage conversation flows and **Ollama** for local model inference, supporting tool integration and session persistence.
 
 ---
 
-## Overview
-AvatarAgentCore serves as the decision-making hub for localized virtual characters. By utilizing local LLMs and structured graph logic, it ensures low-latency responses and data privacy while maintaining persistent character states.
+## 🛠 Tech Stack
 
-## Architecture & Tech Stack
-- **Core Engine**: Python 3.12+ (Dependency management via `uv`)
-- **API Framework**: FastAPI / Uvicorn
-- **Orchestration**: LangGraph, LangChain
-- **LLM Runtime**: Ollama (Local Inference)
-- **Tooling**: Model Context Protocol (MCP) support
-- **Persistence**: SQLite (For dialogue state and long-term memory)
+- **Orchestration**: LangGraph
+- **LLM Inference**: Ollama
+- **Tool Protocol**: Model Context Protocol (MCP)
+- **API Framework**: FastAPI
+- **Persistence**: SQLite (Checkpointer)
+- **Dependency Management**: uv
 
-## Key Features
-- **Graph-Based Logic**: Deterministic and stochastic dialogue path control using LangGraph.
-- **Support for Multiple Response Modes**: Seamless switching between Stream and Static API responses.
-- **Privacy-First**: All inferences are performed locally via Ollama; no data is sent to external clouds.
-- **Stateful Memory**: Automatic session tracking and persistence using SQLite.
+---
+
+## Core Features
+
+### 1. LangGraph Workflow
+The dialogue process is built on a directed graph that includes:
+- **Agent Reasoning**: Running the LLM to process input and decide on actions.
+- **Tool Execution**: Calling local functions or remote MCP tools.
+- **Self-Reflection**: Re-evaluating model outputs for better response quality.
+- **Conditional Paths**: Using logic to decide whether to call tools, reflect, or end the chat.
+
+### 2. MCP Tool Integration
+Supports loading tools from external MCP servers. These tools are combined with local functions and bound to the LLM to expand its capabilities.
+
+### 3. Session Persistence
+Uses SQLite to save the state of each conversation thread. This allows the system to remember chat history across restarts based on a session ID.
+
+### 4. API Interface
+- **Streaming**: Real-time message output using Server-Sent Events (SSE).
+- **Static**: Typical HTTP response that returns the full message after all processing is done.
+
+---
+
+## 📂 Project Structure
+
+```text
+AvatarGraphAgent/
+├── app/
+│   ├── api/            # API routes and server setup
+│   ├── core/           # Configuration and environment settings
+│   ├── graph/          # LangGraph nodes and workflow implementation
+│   ├── mcp/            # MCP client and tool management
+│   ├── memory/         # TODO
+│   └── tools/          # Local tool definitions
+├── data/               # SQLite files and runtime data
+├── mcp_conf.json       # MCP server configuration
+├── pyproject.toml      # Dependency file
+└── .env                # Environment variables
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **Python 3.12+**
+- **Ollama** installed and running
 
 ## Getting Started
 
@@ -96,5 +126,16 @@ This project was developed and tested on the following hardware configuration:
 - **Performance**: Inference speed depends on host hardware (GPU VRAM/System RAM).
 - **Persistence**: Data is stored in the `data/` directory. In Docker, this is managed via a persistent volume.
 
-## License
-This project is licensed under the [MIT License](LICENSE).
+---
+
+## 📡 API Reference
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/v1/stage/chat_stream` | `POST` | Real-time SSE stream |
+| `/v1/stage/chat_static` | `POST` | Full static response |
+
+---
+
+## ⚖ License
+MIT License

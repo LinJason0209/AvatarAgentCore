@@ -5,7 +5,7 @@ from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langchain_core.messages import AIMessageChunk
 
 from app.chat import get_config_dic, get_db_path, get_human_message
-from AvatarGraphAgent.app.graph.builder.host_builder import host_graph
+from app.graph.builder.host_builder import host_graph
 
 def tidy_up_message(message = ""):
     print(" "*60, end="\r")
@@ -34,7 +34,7 @@ async def async_interactive_session(user_input, config, app_graph):
         input=input_data,
         config=config,
         stream_mode="messages"):
-        if isinstance(message, AIMessageChunk) and message.content:
+        if metadata.get("langgraph_node") == "agent" and isinstance(message, AIMessageChunk) and message.content:
             if first_chunk:
                 tidy_up_message()
                 print(f"🤖 Agent Response: ", end="", flush=True)

@@ -19,3 +19,6 @@ wheels/
 
 # uv (python version, Base is 3.12)
 .python-version
+
+data/
+test_api.py

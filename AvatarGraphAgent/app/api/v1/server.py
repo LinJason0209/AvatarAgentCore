@@ -17,15 +17,17 @@ async def async_avatar_chat_stream(user_input:str, thread_id:str):
                 input=input_data,
                 config=config,
                 stream_mode="messages"):
-            if isinstance(message, AIMessageChunk) and message.content:
+            if metadata.get("langgraph_node") == "agent" and isinstance(message, AIMessageChunk) and message.content:
                 response = ChatResponse(message=message.content, thread_id=thread_id)
-                yield response.model_dump_json() + "\n"
+                yield f"data: {response.model_dump_json()}\n\n"
 
 async def async_avatar_chat_static(user_input:str, thread_id:str):
     full_response = ""
     async for chunk in async_avatar_chat_stream(user_input, thread_id):
-        data = json.loads(chunk.strip())
-        full_response += data["message"]
+        raw_json = chunk.replace("data: ", "").strip()
+        if raw_json:
+            data = json.loads(raw_json)
+            full_response += data["message"]
     return full_response
     
             
