@@ -1,20 +1,21 @@
-import asyncio
 import json
 import os
 import sys
+import inspect
+from typing import Dict, List, Optional, Any
 from langchain_mcp_adapters.client import MultiServerMCPClient
 
-from app.system_path import MCP_CONFIG_PATH
+from app.core.system_path import MCP_CONFIG_PATH
 
 MCP_ENABLE_TAG = "enabled"
 
 class McpManager:
     def __init__(self, config_path: str = "mcp_conf.json"):
-        self.config_path = config_path
-        self.client = None
-        self.tools = []
+        self.config_path: str = config_path
+        self.client: Optional[MultiServerMCPClient] = None
+        self.tools: List[Any] = []
 
-    async def initialize(self):
+    async def initialize(self) -> List[Any]:
         if self.client:
             return self.tools
             
@@ -24,15 +25,15 @@ class McpManager:
         
         try:
             with open(self.config_path, "r", encoding="utf-8") as f:
-                config_data:dict = json.load(f)
+                config_data: dict = json.load(f)
             
-            # Check JSON body
-            server_configs:dict = config_data.get("mcpServers", {})
+            server_configs: dict = config_data.get("mcpServers", {})
             if not server_configs:
                 return []
             
-            # Get enable MCP
             active_config = self.get_active_config(server_configs)
+            if not active_config:
+                return []
 
             self.set_env(active_config)
 
@@ -46,47 +47,61 @@ class McpManager:
             print(f"❌ MCP Manager Error: {e}")
             return []
 
-    def get_active_config(self, server_configs:dict):
-        active_config = {}
+    def get_active_config(self, server_configs: Dict[str, Any]) -> Dict[str, Any]:
+        active_config: Dict[str, Any] = {}
         for name, conf in server_configs.items():
-            is_enabled = conf.get(MCP_ENABLE_TAG, True)
-            if is_enabled:
-                cleaned_conf = {}
-                for key, value in conf.items():
-                    if key != MCP_ENABLE_TAG:
-                        cleaned_conf[key] = value
-                active_config[name] = cleaned_conf
+            if conf.get(MCP_ENABLE_TAG, True):
+                active_config[name] = {k: v for k, v in conf.items() if k != MCP_ENABLE_TAG}
                 print(f"✅ Enable MCP: {name}")
             else:
                 print(f"🚫 Disable MCP: {name}")
         return active_config
 
-    def set_env(self, server_configs):
-        for server_id, config in server_configs.items():
+    def set_env(self, server_configs: Dict[str, Any]) -> None:
+        from app.core.env_config import config as env_config
+        base_env = os.environ.copy()
+        failed_servers = []
+
+        for name, config in server_configs.items():
             if sys.platform == "win32" and config.get("command") == "npx":
                 config["command"] = "npx.cmd"
 
-            original_env = config.get("env", {})
-            combined_env = os.environ.copy()
-
-            for k, v in original_env.items():
+            combined_env = base_env.copy()
+            is_valid = True
+            for k, v in config.get("env", {}).items():
                 if v in ("FROM_ENV", ""):
-                    actual_value = os.getenv(k)
+                    # 完全由 env_config 統一管理環境變數
+                    actual_value = getattr(env_config, k, "")
                     if not actual_value:
-                        print(f"⚠️ Warning: Environment variable {k} is missing!")
-                    combined_env[k] = actual_value or ""
+                        print(f"⚠️ Warning: Environment variable '{k}' is missing for MCP '{name}'! Disabling this server.")
+                        is_valid = False
+                        break
+                    combined_env[k] = actual_value
                 else:
-                    combined_env[k] = v
+                    combined_env[k] = str(v)
+            
+            if not is_valid:
+                failed_servers.append(name)
+                continue
                 
             config["env"] = combined_env
             config["transport"] = "stdio"
+            
+        for name in failed_servers:
+            server_configs.pop(name, None)
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
         try:
             if self.client:
-                self.client = None 
-                self.tools = []
-                print("✅ MCP Resources released.")
+                close_func = getattr(self.client, "close", None)
+                if callable(close_func):
+                    close_result = close_func()
+                    if inspect.isawaitable(close_result):
+                        await close_result
+                
+            self.client = None 
+            self.tools = []
+            print("✅ MCP Resources released.")
         except Exception as e:
             print(f"⚠️ Error during MCP shutdown: {e}")
 

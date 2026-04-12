@@ -1,5 +1,7 @@
 import argparse
 import asyncio
+
+import uvicorn
 from app.ui.cli import async_start_interactive_session
 
 def main():
@@ -13,7 +15,7 @@ def control_mode():
     if args.mode == "cli":
         asyncio.run(async_start_interactive_session())
     elif args.mode == "api":
-        print("The API mode is development.")
+         uvicorn.run("app.api.v1.router:app", host="0.0.0.0", port=8000, reload=True)
 
 if __name__ == "__main__":
     main()

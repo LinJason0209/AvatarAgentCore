@@ -1,7 +1,7 @@
 
 
 from app.state import MESSAGE_KEY, AgentState
-from app.system.handler import get_system_prompt
+from app.prompts.system.handler import get_system_prompt
 
 class AgentNode:
     def __init__(self, model):

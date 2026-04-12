@@ -4,7 +4,7 @@ import os
 from langchain_core.messages import HumanMessage
 
 from app.state import MESSAGE_KEY
-from app.system_path import DATA_DIR, DB_PATH
+from app.core.system_path import DATA_DIR, DB_PATH
 
 
 def get_config_dic(thread_id):

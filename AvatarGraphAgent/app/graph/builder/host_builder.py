@@ -1,22 +1,22 @@
-import os
-from dotenv import load_dotenv
+
+
 from langchain_ollama import ChatOllama
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import ToolNode
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+from app.core.env_config import config
 from app.graph.nodes.agent_node import AgentNode
-from app.graph.edges.chould_continue_conditional_edge import should_continue
+from app.graph.edges.should_continue_conditional_edge import should_continue
 from app.mcp.mcp_manager import mcp_manager 
 from app.state import AgentState
 from app.tools.file_tool import list_files, read_file_content
 
-load_dotenv()
 
 # Initialize the ollama connection config
 llm = ChatOllama(
-    model=os.getenv("LLM_MODEL", "gemma3:latest"),
-    base_url=os.getenv("OLLAMA_BASE_URL", "http://host.docker.internal:11434")
+    model=config.LLM_MODEL,
+    base_url=config.OLLAMA_BASE_URL
 )
 
 tool_list = [list_files, read_file_content]
